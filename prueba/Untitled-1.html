@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalizador de Camisetas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <canvas id="tshirtCanvas" width="300" height="400"></canvas>
+        <input type="file" id="imageInput" accept="image/*">
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.1/fabric.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+<style>
+    body { 
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f2f2f2;
+}
+
+#app {
+    position: relative;
+    text-align: center;
+}
+
+#imageInput {
+    margin-top: 10px;
+}
+
+</style>
+<script>document.addEventListener("DOMContentLoaded", function() {
+    const canvas = new fabric.Canvas('tshirtCanvas', {
+        backgroundColor: 'white'
+    });
+
+    // Agrega la imagen de la camiseta
+    fabric.Image.fromURL('ruta_camiseta.jpg', function(img) {
+        img.set({
+            left: 0,
+            top: 0,
+            selectable: false // La camiseta no es seleccionable
+        });
+        canvas.add(img);
+    });
+
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = new Image();
+                img.onload = function() {
+                    const fabricImg = new fabric.Image(img);
+                    canvas.add(fabricImg);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    canvas.on('object:moving', function(options) {
+        const obj = options.target;
+        // Restringe la posición de la imagen dentro de la camiseta
+        if (obj.left < 0 || obj.top < 0 || obj.left + obj.width > canvas.width || obj.top + obj.height > canvas.height) {
+            obj.set({
+                left: Math.min(Math.max(obj.left, 0), canvas.width - obj.width),
+                top: Math.min(Math.max(obj.top, 0), canvas.height - obj.height)
+            });
+            canvas.renderAll();
+        }
+    });
+});
+</script>
